@@ -433,19 +433,34 @@ bool hailo_pcie_read_interrupt(struct hailo_pcie_resources *resources, struct ha
     u32 istatus_host = 0;
     memset(source, 0, sizeof(*source));
 
+    pr_info("HAILO_READ_INT: Reading BCS_ISTATUS_HOST\n");
+
     istatus_host = read_and_clear_reg(&resources->config, BCS_ISTATUS_HOST);
+
+    pr_info("HAILO_READ_INT: BCS_ISTATUS_HOST=0x%08X\n", istatus_host);
+
     if (0 == istatus_host) {
         return false;
     }
 
+    pr_info("HAILO_READ_INT: Interrupt detected\n");
+
     source->sw_interrupts = (istatus_host >> BCS_ISTATUS_HOST_SW_IRQ_SHIFT);
+
+    pr_info("HAILO_READ_INT: SW_INTERRUPTS=0x%02X\n", source->sw_interrupts);
 
     if (istatus_host & BCS_ISTATUS_HOST_VDMA_SRC_IRQ_MASK) {
         source->vdma_channels_bitmap |= read_and_clear_reg(&resources->config, BCS_SOURCE_INTERRUPT_PER_CHANNEL);
+
+        pr_info("HAILO_READ_INT: VDMA_SRC_CHANNELS_BITMAP=0x%02X\n", source->vdma_channels_bitmap);
     }
     if (istatus_host & BCS_ISTATUS_HOST_VDMA_DEST_IRQ_MASK) {
         source->vdma_channels_bitmap |= read_and_clear_reg(&resources->config, BCS_DESTINATION_INTERRUPT_PER_CHANNEL);
+
+        pr_info("HAILO_READ_INT: VDMA_DEST_CHANNELS_BITMAP=0x%02X\n", source->vdma_channels_bitmap);
     }
+
+    pr_info("HAILO_READ_INT: vdma_channels_bitmap = 0x%08x\n", source->vdma_channels_bitmap);
 
     return true;
 }
@@ -866,12 +881,28 @@ void hailo_pcie_update_channel_interrupts_mask(struct hailo_pcie_resources* reso
 
 void hailo_pcie_enable_interrupts(struct hailo_pcie_resources *resources)
 {
+    u32 status = 0;
+
+    /* Before Status */
     u32 mask = hailo_resource_read32(&resources->config, BSC_IMASK_HOST);
+    pr_info("hailo: Before: BSC_IMASK_HOST=0x%08X\n", mask);
+
+    /* Enable interrupts */
     mask |= BSC_ISTATUS_HOST_MASK;
     hailo_resource_write32(&resources->config, BSC_IMASK_HOST, mask);
+    pr_info("hailo: PCIE interrupts enabled, BSC_IMASK_HOST=0x%08X\n", mask);
+
+    /* Clear pending interrupts */
+    status = hailo_resource_read32(&resources->config, BCS_ISTATUS_HOST);
+    pr_info("hailo: Clearing pending interrupts, BCS_ISTATUS_HOST=0x%08X\n", status);
     hailo_resource_write32(&resources->config, BCS_ISTATUS_HOST, 0xFFFFFFFF);
+
+    /* Enable VDMA interrupts per channel */
     hailo_resource_write32(&resources->config, BCS_DESTINATION_INTERRUPT_PER_CHANNEL, 0xFFFFFFFF);
+    pr_info("hailo: Enabled VDMA DESTINATION interrupts per channel\n");
+    
     hailo_resource_write32(&resources->config, BCS_SOURCE_INTERRUPT_PER_CHANNEL, 0xFFFFFFFF);
+    pr_info("hailo: Enabled VDMA SOURCE interrupts per channel\n");
 }
 
 void hailo_pcie_disable_interrupts(struct hailo_pcie_resources* resources)

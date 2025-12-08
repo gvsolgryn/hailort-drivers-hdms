@@ -120,7 +120,7 @@ long hailo_vdma_interrupts_wait_ioctl(struct hailo_vdma_controller *controller, 
     struct semaphore *mutex, bool *should_up_board_mutex)
 {
     long err = 0;
-    struct hailo_vdma_interrupts_wait_params params = {0};
+    struct hailo_vdma_interrupts_wait_params params = {{0}};
     struct hailo_vdma_engine *engine = NULL;
     bool bitmap_not_empty = false;
     u8 engine_index = 0;
@@ -625,7 +625,7 @@ long hailo_vdma_launch_transfer_ioctl(struct hailo_vdma_file_context *context, s
     struct hailo_vdma_engine *engine = NULL;
     struct hailo_vdma_channel *channel = NULL;
     struct hailo_descriptors_list_buffer *descriptors_buffer = NULL;
-    struct hailo_vdma_mapped_transfer_buffer mapped_transfer_buffers[ARRAY_SIZE(params.buffers)] = {0};
+    struct hailo_vdma_mapped_transfer_buffer mapped_transfer_buffers[ARRAY_SIZE(params.buffers)] = {{0}};
     enum dma_data_direction direction = DMA_NONE;
     u8 i = 0;
 

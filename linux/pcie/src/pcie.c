@@ -1452,25 +1452,25 @@ static struct pci_device_id hailo_pcie_id_table[] =
 
 static struct file_operations hailo_pcie_fops =
 {
-    owner:              THIS_MODULE,
-    unlocked_ioctl:     hailo_pcie_fops_unlockedioctl,
-    mmap:               hailo_pcie_fops_mmap,
-    open:               hailo_pcie_fops_open,
-    release:            hailo_pcie_fops_release
+    .owner =              THIS_MODULE,
+    .unlocked_ioctl =     hailo_pcie_fops_unlockedioctl,
+    .mmap =               hailo_pcie_fops_mmap,
+    .open =               hailo_pcie_fops_open,
+    .release =            hailo_pcie_fops_release
 };
 
 
 static struct pci_driver hailo_pci_driver =
 {
-    name:		 DRIVER_NAME,
-    id_table:    hailo_pcie_id_table,
-    probe:		 hailo_pcie_probe,
-    remove:		 hailo_pcie_remove,
-    driver: {
-        pm: &hailo_pcie_pm_ops,
-        probe_type: PROBE_PREFER_ASYNCHRONOUS,
+    .name =     DRIVER_NAME,
+    .id_table = hailo_pcie_id_table,
+    .probe =    hailo_pcie_probe,
+    .remove =   hailo_pcie_remove,
+    .driver = {
+        .pm = &hailo_pcie_pm_ops,
+        .probe_type = PROBE_PREFER_ASYNCHRONOUS,
     },
-    err_handler: &hailo_pcie_err_handlers,
+    .err_handler = &hailo_pcie_err_handlers,
 };
 
 MODULE_DEVICE_TABLE (pci, hailo_pcie_id_table);

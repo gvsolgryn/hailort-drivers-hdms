@@ -39,9 +39,13 @@ static void clear_sg_table(struct sg_table *sgt);
 MODULE_IMPORT_NS(DMA_NS_NAME);
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0) */
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 220)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 220) && LINUX_VERSION_CODE > KERNEL_VERSION(4, 19, 0)
 #define close_fd(fd) __close_fd(current->files, fd)
 #endif // LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 220)
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 19, 0)
+#define close_fd(fd) ___close_fd(current->files, fd)
+#endif
 
 static int hailo_map_dmabuf(struct device *dev, int dmabuf_fd, enum dma_data_direction direction, struct sg_table *sgt,
     struct hailo_dmabuf_info *dmabuf_info)

@@ -355,6 +355,10 @@ irqreturn_t hailo_irqhandler(int irq, void *dev_id)
 
     hailo_dbg(board, "hailo_irqhandler\n");
 
+    hailo_info(board, "===== HAILO IRQ HANDLER CALLED =====\n");
+    hailo_info(board, "irq=%d dev_id=%p\n", irq, dev_id);
+    hailo_info(board, "is_in_boot=%d\n", board->fw_boot.is_in_boot);
+
     while (true) {
         if (!hailo_pcie_is_device_connected(&board->pcie_resources)) {
             hailo_err(board, "Device disconnected while handling irq\n");
@@ -363,6 +367,7 @@ irqreturn_t hailo_irqhandler(int irq, void *dev_id)
 
         got_interrupt = hailo_pcie_read_interrupt(&board->pcie_resources, &irq_source);
         if (!got_interrupt) {
+            hailo_err(board, "No interrupt pending, exiting irq handler\n");
             break;
         }
 
@@ -385,6 +390,8 @@ irqreturn_t hailo_irqhandler(int irq, void *dev_id)
             }
         }
     }
+
+    hailo_info(board, "IRQ handler exit, return value=%d\n", return_value);
 
     return return_value;
 }
