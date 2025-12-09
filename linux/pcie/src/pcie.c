@@ -951,7 +951,7 @@ int hailo_enable_interrupts(struct hailo_pcie_board *board)
 
     hailo_info(board, "[TEST] Device IRQ number: %u\n", board->pDev->irq);
 
-    irq_ret = pci_alloc_irq_vectors(board->pDev, 1, 1, PCI_IRQ_MSI | PCI_IRQ_LEGACY);
+    irq_ret = pci_alloc_irq_vectors(board->pDev, 1, 1, PCI_IRQ_MSI);
     if (irq_ret < 0) {
         hailo_err(board, "pci_alloc_irq_vectors failed %d\n", irq_ret);
         return irq_ret;
