@@ -46,7 +46,7 @@ enum hailo_allocate_driver_buffer_driver_param {
 
 // Debug flag
 static int force_desc_page_size = 0;
-static bool g_is_power_mode_enabled = true;
+static bool g_is_power_mode_enabled = false;
 static int force_allocation_from_driver = HAILO_NO_FORCE_BUFFER;
 static bool force_hailo10h_legacy_mode = false;
 static bool force_boot_linux_from_eemc = false;
@@ -933,28 +933,48 @@ static int hailo_activate_board(struct hailo_pcie_board *board)
 int hailo_enable_interrupts(struct hailo_pcie_board *board)
 {
     int err = 0;
+    int irq_ret = 0;
 
     if (board->interrupts_enabled) {
         hailo_crit(board, "Failed enabling interrupts (already enabled)\n");
         return -EINVAL;
     }
 
+#if 0
     // TODO HRT-2253: use new api for enabling msi: (pci_alloc_irq_vectors)
     if ((err = pci_enable_msi(board->pDev))) {
         hailo_err(board, "Failed to enable MSI %d\n", err);
         return err;
     }
     hailo_info(board, "Enabled MSI interrupt\n");
+#endif
+
+    hailo_info(board, "[TEST] Device IRQ number: %u\n", board->pDev->irq);
+
+    irq_ret = pci_alloc_irq_vectors(board->pDev, 1, 1, PCI_IRQ_MSI | PCI_IRQ_LEGACY);
+    if (irq_ret < 0) {
+        hailo_err(board, "pci_alloc_irq_vectors failed %d\n", irq_ret);
+        return irq_ret;
+    }
+
+    hailo_info(board, "[TEST] SUCCESS: pci_alloc_irq_vectors returned %d vectors\n", irq_ret);
+    hailo_info(board, "[TEST] Device IRQ number after pci_alloc_irq_vectors: %u\n", board->pDev->irq);
+    hailo_info(board, "[TEST] Attempting to request IRQ...\n");
 
     err = request_irq(board->pDev->irq, hailo_irqhandler, HAILO_IRQ_FLAGS, DRIVER_NAME, board);
     if (err) {
         hailo_err(board, "request_irq failed %d\n", err);
-        pci_disable_msi(board->pDev);
+        // pci_disable_msi(board->pDev);
+        pci_free_irq_vectors(board->pDev);
         return err;
     }
     hailo_info(board, "irq enabled %u\n", board->pDev->irq);
 
+    hailo_info(board, "[TEST] SUCCESS: IRQ handler registered for IRQ %u\n", board->pDev->irq);
+    hailo_info(board, "[TEST] HAILO_IRQ_FLAGS = 0x%x\n", HAILO_IRQ_FLAGS);
+
     hailo_pcie_enable_interrupts(&board->pcie_resources);
+    hailo_info(board, "[TEST] PCIe interrupts enabled in device\n");
 
     board->interrupts_enabled = true;
     return 0;
@@ -975,7 +995,8 @@ void hailo_disable_interrupts(struct hailo_pcie_board *board)
     board->interrupts_enabled = false;
     hailo_pcie_disable_interrupts(&board->pcie_resources);
     free_irq(board->pDev->irq, board);
-    pci_disable_msi(board->pDev);
+    // pci_disable_msi(board->pDev);
+    pci_free_irq_vectors(board->pDev);
 }
 
 static int hailo_bar_iomap(struct pci_dev *pdev, int bar, struct hailo_resource *resource)

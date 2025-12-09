@@ -42,6 +42,7 @@ function build {
         CROSS_COMPILE=${CROSS_COMPILE} \
         -C ${KERNEL_DIR} \
         M=${PWD} \
+        ${GDB_FLAG} \
         KBUILD_EXTRA_SYMBOLS=${KERNEL_DIR}/Module.symvers \
         -j34 modules
     echo -e "\e[32mDriver build finished.\e[0m"

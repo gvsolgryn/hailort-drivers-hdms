@@ -355,9 +355,10 @@ irqreturn_t hailo_irqhandler(int irq, void *dev_id)
 
     hailo_dbg(board, "hailo_irqhandler\n");
 
-    hailo_info(board, "===== HAILO IRQ HANDLER CALLED =====\n");
-    hailo_info(board, "irq=%d dev_id=%p\n", irq, dev_id);
-    hailo_info(board, "is_in_boot=%d\n", board->fw_boot.is_in_boot);
+    // ===== 디버그 로그 =====
+    hailo_info(board, "[DEBUG_IRQ] ===== HAILO IRQ HANDLER CALLED =====\n");
+    hailo_info(board, "[DEBUG_IRQ] irq=%d dev_id=%p\n", irq, dev_id);
+    hailo_info(board, "[DEBUG_IRQ] is_in_boot=%d\n", board->fw_boot. is_in_boot);
 
     while (true) {
         if (!hailo_pcie_is_device_connected(&board->pcie_resources)) {
@@ -391,7 +392,7 @@ irqreturn_t hailo_irqhandler(int irq, void *dev_id)
         }
     }
 
-    hailo_info(board, "IRQ handler exit, return value=%d\n", return_value);
+    hailo_info(board, "[DEBUG_IRQ] Exiting handler with return_value=%d\n", return_value);
 
     return return_value;
 }
