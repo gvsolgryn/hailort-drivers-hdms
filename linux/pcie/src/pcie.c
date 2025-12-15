@@ -46,7 +46,7 @@ enum hailo_allocate_driver_buffer_driver_param {
 
 // Debug flag
 static int force_desc_page_size = 0;
-static bool g_is_power_mode_enabled = false;
+static bool g_is_power_mode_enabled = true;
 static int force_allocation_from_driver = HAILO_NO_FORCE_BUFFER;
 static bool force_hailo10h_legacy_mode = false;
 static bool force_boot_linux_from_eemc = false;
@@ -951,7 +951,7 @@ int hailo_enable_interrupts(struct hailo_pcie_board *board)
 
     hailo_info(board, "[TEST] Device IRQ number: %u\n", board->pDev->irq);
 
-    irq_ret = pci_alloc_irq_vectors(board->pDev, 1, 1, PCI_IRQ_MSI);
+    irq_ret = pci_alloc_irq_vectors(board->pDev, 1, 32, PCI_IRQ_MSI | PCI_IRQ_AFFINITY);
     if (irq_ret < 0) {
         hailo_err(board, "pci_alloc_irq_vectors failed %d\n", irq_ret);
         return irq_ret;
